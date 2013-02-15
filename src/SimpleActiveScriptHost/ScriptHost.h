@@ -4,10 +4,23 @@
 
 using namespace System;
 
-namespace SimpleActiveScriptHost {
+namespace CitizenMatt {
+	namespace SimpleActiveScriptHost {
 
-	public ref class Class1
-	{
-		// TODO: Add your methods for this class here.
-	};
+		public ref class ScriptHost
+		{
+		public:
+			ScriptHost(String ^language, String ^application)
+			{
+			}
+
+			~ScriptHost()
+			{
+			}
+
+			void Parse(String ^code, String ^name)
+			{
+			}
+		};
+	}
 }
