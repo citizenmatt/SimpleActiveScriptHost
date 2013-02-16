@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ScriptHost.h" />
+    <ClInclude Include="ScriptSite.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
