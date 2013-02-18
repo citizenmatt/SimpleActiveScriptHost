@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace CitizenMatt.SimpleActiveScriptHost.Facts
@@ -92,6 +93,21 @@ namespace CitizenMatt.SimpleActiveScriptHost.Facts
             }
         }
 
+        [Fact]
+        public void Should_dispose_any_objects_when_finished()
+        {
+            var disposed = false;
+            using (var host = new ScriptHost("javascript", "test"))
+            {
+                host.AddNamedItem("disposable_object", () => new DisposableObject(() => disposed = true));
+                host.Parse("function get_value() { return disposable_object; }", "get_value");
+                var result = host.CallMethod("get_value");
+                Assert.NotNull(result);
+            }
+
+            Assert.True(disposed);
+        }
+
         [ComVisible(true)]
         public class CoolObject
         {
@@ -121,6 +137,22 @@ namespace CitizenMatt.SimpleActiveScriptHost.Facts
             }
 
             public string Value { get; set; }
+        }
+
+        [ComVisible(true)]
+        public class DisposableObject : IDisposable
+        {
+            private readonly Action onDispose;
+
+            public DisposableObject(Action action)
+            {
+                onDispose = action;
+            }
+
+            public void Dispose()
+            {
+                onDispose();
+            }
         }
     }
 }

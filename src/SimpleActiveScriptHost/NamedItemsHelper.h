@@ -14,7 +14,12 @@ public:
 
 	~CNamedItemsHelper()
 	{
-		// TODO: Dispose all stored objects that implement IDisposable
+		for each (Object ^item in namedItems->Values)
+		{
+			IDisposable ^disposable = dynamic_cast<IDisposable^>(item);
+			if (disposable != nullptr)
+				delete disposable;
+		}
 	}
 
 	void AddNamedItem(String ^name, Func<Object ^> ^creator)
@@ -39,11 +44,17 @@ public:
 
 		if ((returnMask & SCRIPTINFO_ITYPEINFO) != 0)
 		{
-//			*ppti = dynamic_cast<ITypeInfo*>(Marshal::GetITypeInfoForType(value->GetType()));
+			if (ppti == nullptr)
+				return E_POINTER;
+			*ppti = static_cast<ITypeInfo*>(Marshal::GetITypeInfoForType(value->GetType()).ToPointer());
 		}
 
-		IntPtr ip = Marshal::GetIUnknownForObject(value);
-		*pUnk = (IUnknown*)ip.ToPointer();
+		if ((returnMask & SCRIPTINFO_IUNKNOWN) != 0)
+		{
+			if (pUnk == nullptr)
+				return E_POINTER;
+			*pUnk = static_cast<IUnknown*>(Marshal::GetIUnknownForObject(value).ToPointer());
+		}
 
 		return S_OK;
 	}

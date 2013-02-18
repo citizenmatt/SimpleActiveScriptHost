@@ -18,6 +18,7 @@ public:
 	{
 		if (m_applicationCookie != 0)
 			m_processDebugManager->RemoveApplication(m_applicationCookie);
+		delete ((CNamedItemsHelper^)namedItems);
 	}
 
 	// IUnknown members
