@@ -7,6 +7,21 @@ using namespace System::Runtime::InteropServices;
 
 namespace CitizenMatt {
 	namespace SimpleActiveScriptHost {
+		
+		public ref class ScriptException : public Exception
+		{
+		public:
+			ScriptException(String ^message, Exception ^innerException)
+				: Exception(message, innerException)
+			{
+			}
+
+			property String ^ScriptName;
+			property Int32 LineNumber;
+			property Int32 CharacterPosition;
+			property String ^LineText;
+			property String ^Description;
+		};
 
 		public ref class ScriptHost
 		{
@@ -30,7 +45,9 @@ namespace CitizenMatt {
 			{
 				pin_ptr<const WCHAR> scriptText = PtrToStringChars(code);
 				pin_ptr<const WCHAR> scriptName = PtrToStringChars(name);
-				m_pSite->ParseScriptText(scriptText, scriptName);
+				HRESULT hr = m_pSite->ParseScriptText(scriptText, scriptName);
+				if (FAILED(hr))
+					throw GetScriptException(hr);
 			}
 
 			Object^ CallMethod(String ^name)
@@ -39,7 +56,9 @@ namespace CitizenMatt {
 
 				_variant_t vt;
 				vt.Clear();
-				m_pSite->CallMethod(methodName, &vt);
+				HRESULT hr = m_pSite->CallMethod(methodName, &vt);
+				if (FAILED(hr))
+					throw GetScriptException(hr);
 
 				return Marshal::GetObjectForNativeVariant((IntPtr)&vt);
 			}
@@ -76,16 +95,35 @@ namespace CitizenMatt {
 
 				m_pSite->SetEngine(engine);
 			}
-		};
 
-		public ref class ScriptException : public Exception
-		{
-		public:
-			property String ^ScriptName;
-			property Int32 LineNumber;
-			property Int32 CharacterPosition;
-			property String ^LineText;
-			property String ^Description;
+			Exception ^GetScriptException(HRESULT hr)
+			{
+				ScriptErrorInfo &error = m_pSite->ScriptErrorInfo;
+
+				String ^source = GetStringOrNull(error.ExcepInfo.bstrSource);
+				String ^description = GetStringOrNull(error.ExcepInfo.bstrDescription);
+				String ^lineText = GetStringOrNull(error.LineText);
+
+				String ^message = String::Format(L"{0}. {1} at line {2}, column {3}", source, description, error.LineNumber.ToString(), error.CharacterPosition.ToString());
+				if (!String::IsNullOrEmpty(lineText))
+                    message += String::Format(L". Source text: '{0}'", lineText);
+
+				ScriptException ^exception = gcnew ScriptException(message, Marshal::GetExceptionForHR(hr));
+				exception->Source = source;
+				exception->Description = description;
+				exception->ScriptName = GetStringOrNull(error.ScriptName);
+				exception->LineNumber = error.LineNumber;
+				exception->CharacterPosition = error.CharacterPosition;
+				exception->LineText = lineText;
+				return exception;
+			}
+
+			String ^GetStringOrNull(BSTR bstr)
+			{
+				if (bstr == nullptr || ::SysStringLen(bstr) == 0)
+					return nullptr;
+				return gcnew String(bstr);
+			}
 		};
 	}
 }

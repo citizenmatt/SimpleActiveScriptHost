@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NamedItemsHelper.h"
+#include "ScriptErrorInfo.h"
 
 class CScriptSite : public IActiveScriptSite,
 					public IActiveScriptSiteDebug32
@@ -64,7 +65,10 @@ public:
 		m_scriptEngine = engine;
 
 		IActiveScriptParse32Ptr parser(m_scriptEngine);
-		return parser->InitNew();
+		HRESULT hr = parser->InitNew();
+
+		hr = m_scriptEngine->SetScriptState(SCRIPTSTATE_CONNECTED);
+		return hr;
 	}
 
 	HRESULT Close()
@@ -95,12 +99,8 @@ public:
 
 		IActiveScriptParse32Ptr parser(m_scriptEngine);
 
-		::EXCEPINFO ei;
-		hr = parser->ParseScriptText(scriptText, nullptr, nullptr, nullptr, dwSourceContextCookie, 0, SCRIPTTEXT_ISVISIBLE | SCRIPTTEXT_HOSTMANAGESSOURCE, nullptr, &ei);
-
-		getchar();
-
-		hr = m_scriptEngine->SetScriptState(SCRIPTSTATE_CONNECTED);
+		hr = parser->ParseScriptText(scriptText, nullptr, nullptr, nullptr, dwSourceContextCookie, 0,
+			SCRIPTTEXT_ISVISIBLE | SCRIPTTEXT_HOSTMANAGESSOURCE, nullptr, &ScriptErrorInfo.ExcepInfo);
 		return hr;
 	}
 
@@ -118,9 +118,9 @@ public:
 		hr = disp->GetIDsOfNames(IID_NULL, const_cast<LPOLESTR*>(&methodName), 1, 0, &rgDispId);
 
 		::DISPPARAMS params = { 0 };
-		::EXCEPINFO ei;
 		UINT err = 0;
-		return disp->Invoke(rgDispId, IID_NULL, 0, DISPATCH_METHOD, &params, vtResult, &ei, &err);
+		hr = disp->Invoke(rgDispId, IID_NULL, 0, DISPATCH_METHOD, &params, vtResult, &ScriptErrorInfo.ExcepInfo, &err);
+		return hr;
 	}
 
 	HRESULT AddNamedItem(LPCOLESTR name)
@@ -157,8 +157,19 @@ public:
 		return S_OK;
 	}
 
-    STDMETHODIMP OnScriptError(IActiveScriptError *pscripterror)
+    STDMETHODIMP OnScriptError(IActiveScriptError *pScriptError)
 	{
+		BSTR bstr = nullptr;
+		HRESULT hr = pScriptError->GetSourceLineText(&bstr);
+		if (SUCCEEDED(hr))
+			ScriptErrorInfo.LineText.Attach(bstr);
+
+		DWORD sourceContext;
+		hr = pScriptError->GetSourcePosition(&sourceContext, &ScriptErrorInfo.LineNumber, &ScriptErrorInfo.CharacterPosition);
+		ScriptErrorInfo.LineNumber++;
+		ScriptErrorInfo.CharacterPosition++;
+
+		hr = pScriptError->GetExceptionInfo(&ScriptErrorInfo.ExcepInfo);
 		return S_OK;
 	}
 
@@ -193,6 +204,12 @@ public:
 
 	STDMETHODIMP OnScriptErrorDebug(IActiveScriptErrorDebug *pErrorDebug, BOOL *pfEnterDebugger, BOOL *pfCallOnScriptErrorWhenContinuing)
 	{
+		*pfEnterDebugger = FALSE;
+		*pfCallOnScriptErrorWhenContinuing = FALSE;
+
+		IActiveScriptErrorPtr pError(pErrorDebug);
+		OnScriptError(pError);
+
 		return S_OK;
 	}
 
@@ -208,4 +225,5 @@ private:
 
 public:
 	gcroot<CNamedItemsHelper^> namedItems;
+	ScriptErrorInfo ScriptErrorInfo;
 };
