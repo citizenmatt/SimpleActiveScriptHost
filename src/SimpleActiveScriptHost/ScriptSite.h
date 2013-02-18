@@ -1,5 +1,7 @@
 #pragma once
 
+#include "NamedItemsHelper.h"
+
 class CScriptSite : public IActiveScriptSite,
 					public IActiveScriptSiteDebug32
 {
@@ -8,6 +10,8 @@ public:
 	{
 		m_dwRef = 0;
 		m_applicationCookie = 0;
+
+		namedItems = gcnew CNamedItemsHelper();
 	}
 
 	~CScriptSite()
@@ -90,7 +94,7 @@ public:
 
 		IActiveScriptParse32Ptr parser(m_scriptEngine);
 
-		EXCEPINFO ei;
+		::EXCEPINFO ei;
 		hr = parser->ParseScriptText(scriptText, nullptr, nullptr, nullptr, dwSourceContextCookie, 0, SCRIPTTEXT_ISVISIBLE | SCRIPTTEXT_HOSTMANAGESSOURCE, nullptr, &ei);
 
 		getchar();
@@ -112,10 +116,15 @@ public:
 		DISPID rgDispId;
 		hr = disp->GetIDsOfNames(IID_NULL, const_cast<LPOLESTR*>(&methodName), 1, 0, &rgDispId);
 
-		DISPPARAMS params = { 0 };
-		EXCEPINFO ei;
+		::DISPPARAMS params = { 0 };
+		::EXCEPINFO ei;
 		UINT err = 0;
 		return disp->Invoke(rgDispId, IID_NULL, 0, DISPATCH_METHOD, &params, vtResult, &ei, &err);
+	}
+
+	HRESULT AddNamedItem(LPCOLESTR name)
+	{
+		return m_scriptEngine->AddNamedItem(name, SCRIPTITEM_ISVISIBLE | SCRIPTITEM_ISSOURCE);
 	}
 
 	// IActiveScriptSite members
@@ -128,7 +137,7 @@ public:
 
     STDMETHODIMP GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask, IUnknown **ppiunkItem, ITypeInfo **ppti)
 	{
-		return E_FAIL;
+		return namedItems->GetItemInfo(pstrName, dwReturnMask, ppiunkItem, ppti);
 	}
 
     STDMETHODIMP GetDocVersionString(BSTR *pbstrVersion)
@@ -137,7 +146,7 @@ public:
 		return S_OK;
 	}
 
-    STDMETHODIMP OnScriptTerminate(const VARIANT *pvarResult, const EXCEPINFO *pexcepinfo)
+    STDMETHODIMP OnScriptTerminate(const VARIANT *pvarResult, const ::EXCEPINFO *pexcepinfo)
 	{
 		return S_OK;
 	}
@@ -195,4 +204,7 @@ private:
 	IDebugApplication32Ptr m_debugApplication;
 
 	IDebugDocumentHelper32Ptr debugDocumentHelper;
+
+public:
+	gcroot<CNamedItemsHelper^> namedItems;
 };

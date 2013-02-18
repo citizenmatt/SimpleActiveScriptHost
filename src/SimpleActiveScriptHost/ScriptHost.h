@@ -46,6 +46,10 @@ namespace CitizenMatt {
 
 			void AddNamedItem(String ^name, Func<Object^> ^creator)
 			{
+				m_pSite->namedItems->AddNamedItem(name, creator);
+
+				pin_ptr<const WCHAR> itemName = PtrToStringChars(name);
+				m_pSite->AddNamedItem(itemName);
 			}
 
 		private:

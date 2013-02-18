@@ -81,6 +81,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="NamedItemsHelper.h" />
     <ClInclude Include="ScriptHost.h" />
     <ClInclude Include="ScriptSite.h" />
     <ClInclude Include="Stdafx.h" />

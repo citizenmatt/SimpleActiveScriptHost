@@ -24,6 +24,9 @@
     <ClInclude Include="ScriptSite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NamedItemsHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleActiveScriptHost.cpp">
