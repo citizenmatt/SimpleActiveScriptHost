@@ -99,6 +99,25 @@ public:
 		return hr;
 	}
 
+	HRESULT GetScriptDispatch(IDispatch **ppdisp)
+	{
+		return m_scriptEngine->GetScriptDispatch(nullptr, ppdisp);
+	}
+
+	HRESULT CallMethod(LPCOLESTR methodName, VARIANT *vtResult)
+	{
+		IDispatchPtr disp;
+		HRESULT hr = m_scriptEngine->GetScriptDispatch(nullptr, &disp);
+
+		DISPID rgDispId;
+		hr = disp->GetIDsOfNames(IID_NULL, const_cast<LPOLESTR*>(&methodName), 1, 0, &rgDispId);
+
+		DISPPARAMS params = { 0 };
+		EXCEPINFO ei;
+		UINT err = 0;
+		return disp->Invoke(rgDispId, IID_NULL, 0, DISPATCH_METHOD, &params, vtResult, &ei, &err);
+	}
+
 	// IActiveScriptSite members
 public:
 	STDMETHODIMP GetLCID(LCID *plcid)

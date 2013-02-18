@@ -3,6 +3,7 @@
 #include "ScriptSite.h"
 
 using namespace System;
+using namespace System::Runtime::InteropServices;
 
 namespace CitizenMatt {
 	namespace SimpleActiveScriptHost {
@@ -34,7 +35,13 @@ namespace CitizenMatt {
 
 			Object^ CallMethod(String ^name)
 			{
-				return nullptr;
+				pin_ptr<const WCHAR> methodName = PtrToStringChars(name);
+
+				_variant_t vt;
+				vt.Clear();
+				m_pSite->CallMethod(methodName, &vt);
+
+				return Marshal::GetObjectForNativeVariant((IntPtr)&vt);
 			}
 
 			void AddNamedItem(String ^name, Func<Object^> ^creator)
