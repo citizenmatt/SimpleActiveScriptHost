@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DebugDocumentsHelper.h"
 #include "NamedItemsHelper.h"
 #include "ScriptErrorInfo.h"
 
@@ -13,6 +14,7 @@ public:
 		m_applicationCookie = 0;
 
 		namedItems = gcnew CNamedItemsHelper();
+		documents = gcnew CDebugDocumentsHelper();
 	}
 
 	~CScriptSite()
@@ -20,6 +22,7 @@ public:
 		if (m_applicationCookie != 0)
 			m_processDebugManager->RemoveApplication(m_applicationCookie);
 		delete ((CNamedItemsHelper^)namedItems);
+		delete ((CDebugDocumentsHelper^)documents);
 	}
 
 	// IUnknown members
@@ -90,6 +93,7 @@ public:
 	{
 		DWORD dwSourceContextCookie = 0;
 
+		IDebugDocumentHelper32Ptr debugDocumentHelper;
 		HRESULT hr = m_processDebugManager->CreateDebugDocumentHelper(nullptr, &debugDocumentHelper);
 		hr = debugDocumentHelper->Init(m_debugApplication, scriptName, scriptName, TEXT_DOC_ATTR_READONLY);
 		hr = debugDocumentHelper->Attach(nullptr);
@@ -98,6 +102,8 @@ public:
 		hr = debugDocumentHelper->DefineScriptBlock(0, len, m_scriptEngine, FALSE, &dwSourceContextCookie);
 
 		IActiveScriptParse32Ptr parser(m_scriptEngine);
+
+		documents->Add(dwSourceContextCookie, scriptName, debugDocumentHelper);
 
 		hr = parser->ParseScriptText(scriptText, nullptr, nullptr, nullptr, dwSourceContextCookie, 0,
 			SCRIPTTEXT_ISVISIBLE | SCRIPTTEXT_HOSTMANAGESSOURCE, nullptr, &ScriptErrorInfo.ExcepInfo);
@@ -170,6 +176,8 @@ public:
 		ScriptErrorInfo.CharacterPosition++;
 
 		hr = pScriptError->GetExceptionInfo(&ScriptErrorInfo.ExcepInfo);
+
+		ScriptErrorInfo.ScriptName.Attach(documents->GetDocumentName(sourceContext));
 		return S_OK;
 	}
 
@@ -180,6 +188,8 @@ public:
 public:
 	STDMETHODIMP GetDocumentContextFromPosition(DWORD dwSourceContext, ULONG uCharacterOffset, ULONG uNumChars, IDebugDocumentContext **ppsc)
 	{
+		IDebugDocumentHelper32Ptr debugDocumentHelper = documents->GetDocumentHelper(dwSourceContext);
+
 		ULONG ulStartOffset = 0, ulLength = 0;
 		HRESULT hr = debugDocumentHelper->GetScriptBlockInfo(dwSourceContext, nullptr, &ulStartOffset, &ulLength);
 		return debugDocumentHelper->CreateDebugDocumentContext(ulStartOffset + uCharacterOffset, uNumChars, ppsc);
@@ -221,9 +231,8 @@ private:
 	IProcessDebugManager32Ptr m_processDebugManager;
 	IDebugApplication32Ptr m_debugApplication;
 
-	IDebugDocumentHelper32Ptr debugDocumentHelper;
-
 public:
 	gcroot<CNamedItemsHelper^> namedItems;
+	gcroot<CDebugDocumentsHelper^> documents;
 	ScriptErrorInfo ScriptErrorInfo;
 };
