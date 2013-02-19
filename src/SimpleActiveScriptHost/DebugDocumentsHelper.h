@@ -1,56 +1,79 @@
 #pragma once
 
-using namespace System;
-using namespace System::Collections::Generic;
-using namespace System::Runtime::InteropServices;
+#define ALLOCATE_STEP 30
 
-ref class CDebugDocumentsHelper
+class CDebugDocumentsHelper
 {
 public:
 	CDebugDocumentsHelper()
 	{
-		documents = gcnew Dictionary<UInt32, Data^>();
+		documentCount = 0;
+		documentAllocated = ALLOCATE_STEP;
+		documents = new Data*[documentAllocated];
 	}
 
-	void Add(UInt32 sourceContext, LPCWSTR name, IDebugDocumentHelper32 *debugDocumentHelper)
+	~CDebugDocumentsHelper()
 	{
-		documents->Add(sourceContext, gcnew Data(name, debugDocumentHelper));
+		for (int i = 0; i < documentCount; i++)
+			delete documents[i];
+		delete [] documents;
 	}
 
-	BSTR GetDocumentName(UInt32 sourceContext)
+
+	void Add(DWORD sourceContext, LPCWSTR name, IDebugDocumentHelper32 *debugDocumentHelper)
 	{
-		Data ^data;
-		if (documents->TryGetValue(sourceContext, data))
+		if (documentCount >= documentAllocated)
 		{
-			pin_ptr<const WCHAR> name = PtrToStringChars(data->Name);
-			return ::SysAllocString(name);
+			documentAllocated += ALLOCATE_STEP;
+			Data **docs = documents;
+			documents = new Data*[documentAllocated];
+			for (int i = 0; i < documentCount; i++)
+				documents[i] = docs[i];
+			delete[] docs;
+		}
+		documents[documentCount] = new Data(sourceContext, name, debugDocumentHelper);
+		documentCount++;
+	}
+
+	// Doesn't add reference!
+	BSTR GetDocumentName(DWORD sourceContext)
+	{
+		for (int i = 0; i < documentCount; i++)
+		{
+			if (sourceContext == documents[i]->SourceContextCookie)
+				return documents[i]->Name;
 		}
 		return nullptr;
 	}
 
-	IDebugDocumentHelper32 *GetDocumentHelper(UInt32 sourceContext)
+	// Doesn't add reference!
+	IDebugDocumentHelper32 *GetDocumentHelper(DWORD sourceContext)
 	{
-		Data ^data;
-		if (documents->TryGetValue(sourceContext, data))
+		for (int i = 0; i < documentCount; i++)
 		{
-			return static_cast<IDebugDocumentHelper32*>(Marshal::GetIUnknownForObject(data->DebugDocumentHelper).ToPointer());
+			if (sourceContext == documents[i]->SourceContextCookie)
+				return documents[i]->DebugDocumentHelper.GetInterfacePtr();
 		}
 		return nullptr;
 	}
 
 private:
-	ref class Data
+	class Data
 	{
 	public:
-		Data(LPCWSTR name, IDebugDocumentHelper32 *debugDocumentHelper)
+		Data(DWORD sourceContextCookie, LPCWSTR name, IDebugDocumentHelper32 *debugDocumentHelper)
 		{
-			Name = gcnew String(name);
-			DebugDocumentHelper = Marshal::GetObjectForIUnknown((IntPtr)debugDocumentHelper);
+			SourceContextCookie = sourceContextCookie;
+			Name = name;
+			DebugDocumentHelper = debugDocumentHelper;
 		}
 
-		String ^Name;
-		Object ^DebugDocumentHelper;
+		DWORD SourceContextCookie;
+		_bstr_t Name;
+		IDebugDocumentHelper32Ptr DebugDocumentHelper;
 	};
 
-	IDictionary<UInt32, Data^> ^documents;
+	Data **documents;
+	int documentCount;
+	int documentAllocated;
 };

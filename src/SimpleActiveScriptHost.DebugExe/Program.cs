@@ -27,6 +27,7 @@ namespace CitizenMatt.SimpleActiveScriptHost.DebugExe
             using (var host = new ScriptHost("javascript", "debug_exe"))
             {
                 host.Parse(ReturnNumber, "ReturnNumber.js");
+                host.Parse(ReturnString, "ReturnString.js");
 
                 Console.WriteLine("Press enter to continue...");
                 Console.ReadLine();

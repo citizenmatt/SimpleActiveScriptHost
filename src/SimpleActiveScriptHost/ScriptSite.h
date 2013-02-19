@@ -14,7 +14,6 @@ public:
 		m_applicationCookie = 0;
 
 		namedItems = gcnew CNamedItemsHelper();
-		documents = gcnew CDebugDocumentsHelper();
 	}
 
 	~CScriptSite()
@@ -22,7 +21,6 @@ public:
 		if (m_applicationCookie != 0)
 			m_processDebugManager->RemoveApplication(m_applicationCookie);
 		delete ((CNamedItemsHelper^)namedItems);
-		delete ((CDebugDocumentsHelper^)documents);
 	}
 
 	// IUnknown members
@@ -103,7 +101,7 @@ public:
 
 		IActiveScriptParse32Ptr parser(m_scriptEngine);
 
-		documents->Add(dwSourceContextCookie, scriptName, debugDocumentHelper);
+		documents.Add(dwSourceContextCookie, scriptName, debugDocumentHelper);
 
 		hr = parser->ParseScriptText(scriptText, nullptr, nullptr, nullptr, dwSourceContextCookie, 0,
 			SCRIPTTEXT_ISVISIBLE | SCRIPTTEXT_HOSTMANAGESSOURCE, nullptr, &ScriptErrorInfo.ExcepInfo);
@@ -177,7 +175,7 @@ public:
 
 		hr = pScriptError->GetExceptionInfo(&ScriptErrorInfo.ExcepInfo);
 
-		ScriptErrorInfo.ScriptName.Attach(documents->GetDocumentName(sourceContext));
+		ScriptErrorInfo.ScriptName = documents.GetDocumentName(sourceContext);
 		return S_OK;
 	}
 
@@ -188,7 +186,7 @@ public:
 public:
 	STDMETHODIMP GetDocumentContextFromPosition(DWORD dwSourceContext, ULONG uCharacterOffset, ULONG uNumChars, IDebugDocumentContext **ppsc)
 	{
-		IDebugDocumentHelper32Ptr debugDocumentHelper = documents->GetDocumentHelper(dwSourceContext);
+		IDebugDocumentHelper32Ptr debugDocumentHelper = documents.GetDocumentHelper(dwSourceContext);
 
 		ULONG ulStartOffset = 0, ulLength = 0;
 		HRESULT hr = debugDocumentHelper->GetScriptBlockInfo(dwSourceContext, nullptr, &ulStartOffset, &ulLength);
@@ -230,9 +228,9 @@ private:
 	IActiveScriptPtr m_scriptEngine;
 	IProcessDebugManager32Ptr m_processDebugManager;
 	IDebugApplication32Ptr m_debugApplication;
+	CDebugDocumentsHelper documents;
 
 public:
 	gcroot<CNamedItemsHelper^> namedItems;
-	gcroot<CDebugDocumentsHelper^> documents;
 	ScriptErrorInfo ScriptErrorInfo;
 };
