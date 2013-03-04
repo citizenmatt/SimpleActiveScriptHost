@@ -3,4 +3,4 @@
 #include "stdafx.h"
 
 #include "ScriptHost.h"
-
+#include "JsObject.h"

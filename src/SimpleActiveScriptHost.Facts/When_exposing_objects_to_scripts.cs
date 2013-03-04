@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -108,6 +109,32 @@ namespace CitizenMatt.SimpleActiveScriptHost.Facts
             Assert.True(disposed);
         }
 
+        [Fact]
+        public void Should_pass_script_objects_to_native_code()
+        {
+            const string code = 
+@"function pass_object() {
+    native_object.do_something({
+        text: 'cheese',
+        number: 37
+    });
+}";
+
+            using (var host = new ScriptHost("javascript", "test"))
+            {
+                var nativeObject = new NativeObject();
+                host.AddNamedItem("native_object", () => nativeObject);
+                host.Parse(code, "test");
+                host.CallMethod("pass_object");
+
+                var jsObject = new JsObject(nativeObject.Value);
+
+                Assert.Equal("cheese", jsObject.GetValue<string>("text"));
+                Assert.Equal(37, jsObject.GetValue<int>("number"));
+            }
+        }
+
+
         [ComVisible(true)]
         public class CoolObject
         {
@@ -153,6 +180,17 @@ namespace CitizenMatt.SimpleActiveScriptHost.Facts
             {
                 onDispose();
             }
+        }
+
+        [ComVisible(true)]
+        public class NativeObject
+        {
+            public void do_something(object value)
+            {
+                Value = value;
+            }
+
+            public object Value { get; set; }
         }
     }
 }
