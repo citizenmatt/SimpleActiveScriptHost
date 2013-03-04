@@ -80,10 +80,12 @@ public:
 	HRESULT CreateApplication(LPCWSTR applicationName)
 	{
 		HRESULT hr = m_processDebugManager.CreateInstance(CLSID_ProcessDebugManager);
-
-		hr = m_processDebugManager->CreateApplication(&m_debugApplication);
-		hr = m_debugApplication->SetName(applicationName);
-		hr = m_processDebugManager->AddApplication(m_debugApplication, &m_applicationCookie);
+		if (SUCCEEDED(hr))
+		{
+			hr = m_processDebugManager->CreateApplication(&m_debugApplication);
+			hr = m_debugApplication->SetName(applicationName);
+			hr = m_processDebugManager->AddApplication(m_debugApplication, &m_applicationCookie);
+		}
 		return hr;
 	}
 
@@ -91,18 +93,21 @@ public:
 	{
 		DWORD dwSourceContextCookie = 0;
 
-		IDebugDocumentHelper32Ptr debugDocumentHelper;
-		HRESULT hr = m_processDebugManager->CreateDebugDocumentHelper(nullptr, &debugDocumentHelper);
-		hr = debugDocumentHelper->Init(m_debugApplication, scriptName, scriptName, TEXT_DOC_ATTR_READONLY);
-		hr = debugDocumentHelper->Attach(nullptr);
-		hr = debugDocumentHelper->AddUnicodeText(scriptText);
-		ULONG len = lstrlenW(scriptText);
-		hr = debugDocumentHelper->DefineScriptBlock(0, len, m_scriptEngine, FALSE, &dwSourceContextCookie);
+		HRESULT hr;
+		if (m_processDebugManager != nullptr)
+		{
+			IDebugDocumentHelper32Ptr debugDocumentHelper;
+			hr = m_processDebugManager->CreateDebugDocumentHelper(nullptr, &debugDocumentHelper);
+			hr = debugDocumentHelper->Init(m_debugApplication, scriptName, scriptName, TEXT_DOC_ATTR_READONLY);
+			hr = debugDocumentHelper->Attach(nullptr);
+			hr = debugDocumentHelper->AddUnicodeText(scriptText);
+			ULONG len = lstrlenW(scriptText);
+			hr = debugDocumentHelper->DefineScriptBlock(0, len, m_scriptEngine, FALSE, &dwSourceContextCookie);
+
+			documents.Add(dwSourceContextCookie, scriptName, debugDocumentHelper);
+		}
 
 		IActiveScriptParse32Ptr parser(m_scriptEngine);
-
-		documents.Add(dwSourceContextCookie, scriptName, debugDocumentHelper);
-
 		hr = parser->ParseScriptText(scriptText, nullptr, nullptr, nullptr, dwSourceContextCookie, 0,
 			SCRIPTTEXT_ISVISIBLE | SCRIPTTEXT_HOSTMANAGESSOURCE, nullptr, &ScriptErrorInfo.ExcepInfo);
 		return hr;
@@ -113,7 +118,7 @@ public:
 		return m_scriptEngine->GetScriptDispatch(nullptr, ppdisp);
 	}
 
-	HRESULT CallMethod(LPCOLESTR methodName, VARIANT *vtResult)
+	HRESULT CallMethod(LPCOLESTR methodName, UINT numArgs, VARIANTARG *args, VARIANT *vtResult)
 	{
 		IDispatchPtr disp;
 		HRESULT hr = m_scriptEngine->GetScriptDispatch(nullptr, &disp);
@@ -122,6 +127,8 @@ public:
 		hr = disp->GetIDsOfNames(IID_NULL, const_cast<LPOLESTR*>(&methodName), 1, 0, &rgDispId);
 
 		::DISPPARAMS params = { 0 };
+		params.cArgs = numArgs;
+		params.rgvarg = args;
 		UINT err = 0;
 		hr = disp->Invoke(rgDispId, IID_NULL, 0, DISPATCH_METHOD, &params, vtResult, &ScriptErrorInfo.ExcepInfo, &err);
 		return hr;
@@ -187,17 +194,21 @@ public:
 	STDMETHODIMP GetDocumentContextFromPosition(DWORD dwSourceContext, ULONG uCharacterOffset, ULONG uNumChars, IDebugDocumentContext **ppsc)
 	{
 		IDebugDocumentHelper32Ptr debugDocumentHelper = documents.GetDocumentHelper(dwSourceContext);
+		if (debugDocumentHelper != nullptr)
+		{
+			ULONG ulStartOffset = 0, ulLength = 0;
+			HRESULT hr = debugDocumentHelper->GetScriptBlockInfo(dwSourceContext, nullptr, &ulStartOffset, &ulLength);
+			return debugDocumentHelper->CreateDebugDocumentContext(ulStartOffset + uCharacterOffset, uNumChars, ppsc);
+		}
 
-		ULONG ulStartOffset = 0, ulLength = 0;
-		HRESULT hr = debugDocumentHelper->GetScriptBlockInfo(dwSourceContext, nullptr, &ulStartOffset, &ulLength);
-		return debugDocumentHelper->CreateDebugDocumentContext(ulStartOffset + uCharacterOffset, uNumChars, ppsc);
+		return E_NOTIMPL;
 	}
 
 	STDMETHODIMP GetApplication(IDebugApplication32 **ppda)
 	{
 		if (!ppda) return E_POINTER;
 		*ppda = nullptr;
-		if (!m_debugApplication) return E_UNEXPECTED;
+		if (!m_debugApplication) return E_NOTIMPL;
 
 		*ppda = m_debugApplication.GetInterfacePtr();
 		return S_OK;
@@ -206,7 +217,7 @@ public:
 	STDMETHODIMP GetRootApplicationNode(IDebugApplicationNode **ppdanRoot)
 	{
 		if (!ppdanRoot) return E_POINTER;
-		if (!m_debugApplication) return E_UNEXPECTED;
+		if (!m_debugApplication) return E_NOTIMPL;
 		return m_debugApplication->GetRootNode(ppdanRoot);
 	}
 

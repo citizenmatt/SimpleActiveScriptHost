@@ -50,13 +50,32 @@ namespace CitizenMatt {
 					throw GetScriptException(hr);
 			}
 
-			Object^ CallMethod(String ^name)
+			Object^ CallMethod(String ^name, ... array<Object^>^ params)
 			{
 				pin_ptr<const WCHAR> methodName = PtrToStringChars(name);
 
+				VARIANTARG *args = nullptr;
+				if (params->Length > 0)
+				{
+					args = new VARIANTARG[params->Length];
+					for (int i = 0; i < params->Length; i++)
+					{
+						IntPtr ip = (IntPtr)&args[i];
+						Marshal::GetNativeVariantForObject(params[i], ip);
+					}
+				}
+
 				_variant_t vt;
 				vt.Clear();
-				HRESULT hr = m_pSite->CallMethod(methodName, &vt);
+				HRESULT hr = m_pSite->CallMethod(methodName, params->Length, args, &vt);
+
+				if (args != nullptr)
+				{
+					for (int i = 0; i < params->Length; i ++)
+						::VariantClear(&args[i]);
+					delete [] args;
+				}
+
 				if (FAILED(hr))
 					throw GetScriptException(hr);
 
