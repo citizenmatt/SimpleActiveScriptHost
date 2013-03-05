@@ -23,8 +23,8 @@ namespace CitizenMatt {
 		public ref class UnknownScriptLanguageException : public Exception
 		{
 		public:
-			UnknownScriptLanguageException(String ^message)
-				: Exception(message)
+			UnknownScriptLanguageException(String ^message, Exception ^innerException)
+				: Exception(message, innerException)
 			{
 			}
 		};

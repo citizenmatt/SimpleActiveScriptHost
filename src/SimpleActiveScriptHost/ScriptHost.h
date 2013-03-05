@@ -20,7 +20,9 @@ namespace CitizenMatt {
 				}
 				catch(_com_error &e)
 				{
-					throw gcnew UnknownScriptLanguageException(String::Format("Unable to create script language {0}", language));
+					Exception^ innerException = Marshal::GetExceptionForHR(e.Error());
+					String^ message = String::Format("Unable to create script language {0}: {1}", language, innerException->Message);
+					throw gcnew UnknownScriptLanguageException(message, innerException);
 				}
 			}
 

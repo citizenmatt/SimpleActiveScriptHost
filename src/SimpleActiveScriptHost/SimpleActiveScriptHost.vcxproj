@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClInclude Include="DebugDocumentsHelper.h" />
     <ClInclude Include="ScriptException.h" />
+    <ClInclude Include="ScriptHostFactory.h" />
     <ClInclude Include="ScriptObject.h" />
     <ClInclude Include="NamedItemsHelper.h" />
     <ClInclude Include="ScriptErrorInfo.h" />

@@ -39,6 +39,9 @@
     <ClInclude Include="ScriptException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptHostFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SimpleActiveScriptHost.cpp">
