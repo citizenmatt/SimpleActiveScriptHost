@@ -45,6 +45,7 @@
     <Compile Include="When_calling_method.cs" />
     <Compile Include="When_calling_method_with_parameters.cs" />
     <Compile Include="Not_yet_implemented.cs" />
+    <Compile Include="When_creating_script_host.cs" />
     <Compile Include="When_parsing_multiple_scripts.cs" />
     <Compile Include="When_parsing_scripts_with_errors.cs" />
     <Compile Include="When_calling_managed_code_from_script.cs" />

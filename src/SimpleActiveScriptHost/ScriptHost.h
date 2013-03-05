@@ -13,8 +13,15 @@ namespace CitizenMatt {
 		public:
 			ScriptHost(String ^language, String ^application)
 			{
-				IActiveScriptPtr engine = CreateActiveScriptEngine(language);
-				CreateSite(engine, application);
+				try
+				{
+					IActiveScriptPtr engine = CreateActiveScriptEngine(language);
+					CreateSite(engine, application);
+				}
+				catch(_com_error &e)
+				{
+					throw gcnew UnknownScriptLanguageException(String::Format("Unable to create script language {0}", language));
+				}
 			}
 
 			~ScriptHost()

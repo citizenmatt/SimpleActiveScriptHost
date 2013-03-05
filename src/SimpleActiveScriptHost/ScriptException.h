@@ -19,5 +19,14 @@ namespace CitizenMatt {
 			property String ^LineText;
 			property String ^Description;
 		};
+
+		public ref class UnknownScriptLanguageException : public Exception
+		{
+		public:
+			UnknownScriptLanguageException(String ^message)
+				: Exception(message)
+			{
+			}
+		};
 	}
 }
