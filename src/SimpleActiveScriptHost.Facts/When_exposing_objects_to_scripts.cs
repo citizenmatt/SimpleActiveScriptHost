@@ -127,10 +127,10 @@ namespace CitizenMatt.SimpleActiveScriptHost.Facts
                 host.Parse(code, "test");
                 host.CallMethod("pass_object");
 
-                var jsObject = new JsObject(nativeObject.Value);
+                var scriptObject = new ScriptObject(nativeObject.Value);
 
-                Assert.Equal("cheese", jsObject.GetValue<string>("text"));
-                Assert.Equal(37, jsObject.GetValue<int>("number"));
+                Assert.Equal("cheese", scriptObject.GetValue<string>("text"));
+                Assert.Equal(37, scriptObject.GetValue<int>("number"));
             }
         }
 

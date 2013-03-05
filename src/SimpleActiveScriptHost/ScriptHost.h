@@ -60,7 +60,7 @@ namespace CitizenMatt {
 					args = new VARIANTARG[params->Length];
 					for (int i = 0; i < params->Length; i++)
 					{
-						IntPtr ip = (IntPtr)&args[i];
+						IntPtr ip = (IntPtr)&args[params->Length - i - 1];
 						Marshal::GetNativeVariantForObject(params[i], ip);
 					}
 				}

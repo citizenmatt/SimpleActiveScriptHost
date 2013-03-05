@@ -47,5 +47,19 @@ namespace CitizenMatt.SimpleActiveScriptHost.Facts
                 Assert.Equal(6, intRetval);
             }
         }
+
+        [Fact]
+        public void Should_pass_parameters_in_correct_order()
+        {
+            const string code = @"function add(val1, val2, val3) { return (val1 * 10) + (val2 * 100) + (val3 * 1000); }";
+
+            using (var host = new ScriptHost("javascript", "test"))
+            {
+                host.Parse(code, "stuff");
+                var retval = host.CallMethod("add", 1, 2, 3);
+                var intRetval = Assert.IsType<int>(retval);
+                Assert.Equal(3210, intRetval);
+            }
+        }
     }
 }

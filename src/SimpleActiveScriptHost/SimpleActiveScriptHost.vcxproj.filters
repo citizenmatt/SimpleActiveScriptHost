@@ -33,7 +33,7 @@
     <ClInclude Include="DebugDocumentsHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JsObject.h">
+    <ClInclude Include="ScriptObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
