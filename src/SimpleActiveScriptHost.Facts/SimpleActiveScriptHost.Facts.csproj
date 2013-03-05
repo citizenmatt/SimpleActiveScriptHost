@@ -48,6 +48,7 @@
     <Compile Include="Not_yet_implemented.cs" />
     <Compile Include="When_parsing_multiple_scripts.cs" />
     <Compile Include="When_parsing_scripts_with_errors.cs" />
+    <Compile Include="When_parsing_script_objects_in_native_Code.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
