@@ -23,6 +23,7 @@ namespace CitizenMatt {
 				return gcnew ScriptHost("vbscript", application);
 			}
 
+		internal:
 			static String^ ChakraClsid = "{16d51579-a30b-4c8b-a276-0ff4dc41e755}";
 		};
 	}
