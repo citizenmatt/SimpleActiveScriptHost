@@ -2,5 +2,6 @@
 
 #include "stdafx.h"
 
+#include "ScriptException.h"
 #include "ScriptHost.h"
 #include "ScriptObject.h"
