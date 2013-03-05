@@ -44,11 +44,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="When_calling_method.cs" />
     <Compile Include="When_calling_method_with_parameters.cs" />
-    <Compile Include="When_exposing_objects_to_scripts.cs" />
     <Compile Include="Not_yet_implemented.cs" />
     <Compile Include="When_parsing_multiple_scripts.cs" />
     <Compile Include="When_parsing_scripts_with_errors.cs" />
-    <Compile Include="When_parsing_script_objects_in_native_Code.cs" />
+    <Compile Include="When_calling_managed_code_from_script.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -17,7 +17,17 @@ namespace CitizenMatt {
 			generic <class T>
 			T GetValue(String ^name)
 			{
-				return static_cast<T>(Invoke(name, BindingFlags::GetProperty));
+				return static_cast<T>(Invoke(name, System::Reflection::BindingFlags::GetProperty));
+			}
+
+			property ScriptObject^ default[Object^]
+			{
+				ScriptObject^ get(Object ^key) { return gcnew ScriptObject(GetValue<Object^>(key->ToString())); }
+			}
+
+			ScriptObject^ GetObject(String ^name)
+			{
+				return gcnew ScriptObject(GetValue<Object^>(name));
 			}
 
 		private:
