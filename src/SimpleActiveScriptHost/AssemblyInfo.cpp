@@ -40,3 +40,4 @@ using namespace System::Security::Permissions;
 [assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];
 
 [assembly:InternalsVisibleTo("CitizenMatt.SimpleActiveScriptHost.Facts")];
+[assembly:InternalsVisibleTo("CitizenMatt.SimpleActiveScriptHost.Facts.CLR4")];

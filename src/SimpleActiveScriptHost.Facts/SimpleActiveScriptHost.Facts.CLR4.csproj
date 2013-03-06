@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CF619C74-6C52-4592-858B-46C871D20213}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{F053290C-68A7-4836-AFC4-9A99BB73FE9F}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CitizenMatt.SimpleActiveScriptHost.DebugExe</RootNamespace>
-    <AssemblyName>CitizenMatt.SimpleActiveScriptHost.DebugExe</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>CitizenMatt.SimpleActiveScriptHost.Facts</RootNamespace>
+    <AssemblyName>CitizenMatt.SimpleActiveScriptHost.Facts.CLR4</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -21,9 +20,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -36,12 +35,29 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="xunit, Version=1.9.1.1600, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\xunit.1.9.1\lib\net20\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.extensions, Version=1.9.1.1600, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Not_yet_implemented.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="When_calling_managed_code_from_script.cs" />
+    <Compile Include="When_calling_method.cs" />
+    <Compile Include="When_calling_method_with_parameters.cs" />
+    <Compile Include="When_creating_script_host.cs" />
+    <Compile Include="When_creating_script_host_with_factory.cs" />
+    <Compile Include="When_parsing_multiple_scripts.cs" />
+    <Compile Include="When_parsing_scripts_with_errors.cs" />
+    <Compile Include="When_using_dynamic.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimpleActiveScriptHost\SimpleActiveScriptHost.vcxproj">
