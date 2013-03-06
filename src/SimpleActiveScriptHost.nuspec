@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>CitizenMatt.SimpleActiveScriptHost</id>
+    <version>$id$</version>
+    <authors>Matt Ellis</authors>
+    <owners>Matt Ellis</owners>
+    <licenseUrl>https://github.com/citizenmatt/SimpleActiveScriptHost/blob/master/license.txt</licenseUrl>
+    <projectUrl>https://github.com/citizenmatt/SimpleActiveScriptHost</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Simple host for Microsoft's ActiveScripting API. Allows you to host JavaScript or VBScript in your application. Also allows you to debug scripts you host.</description>
+    <copyright>Copyright Matt Ellis 2013</copyright>
+    <tags>ActiveScripting JavaScript</tags>
+    <frameworkAssemblies>
+        <frameworkAssembly assemblyName="Microsoft.VisualC, Version=8.0.0.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
